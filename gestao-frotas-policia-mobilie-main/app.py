@@ -3,10 +3,10 @@ import flet as ft
 
 def main(page: ft.Page):
     page.title = "PMSC Operacional - Login"
-    page.window_width = 360
-    page.window_height = 740
-    page.window_resizable = False
-    page.window_maximized = False
+    page.window.width = 400
+    page.window.height = 740
+    page.window.resizable = False
+    page.window.maximized = False
     page.scroll = ft.ScrollMode.AUTO
 
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
@@ -35,7 +35,6 @@ def main(page: ft.Page):
     )
 
     txt_erro = ft.Text("", color="red", size=12, weight=ft.FontWeight.BOLD)
-
 
     def mudar_para_dashboard():
         page.appbar = ft.AppBar(
@@ -148,11 +147,228 @@ def main(page: ft.Page):
                                     padding=6,
                                     border_radius=12
                                 )
+
                             ]
                         )
                     ]
                 )
+            ),
+            # Card vermelho
+            ft.Container(
+                margin=ft.Margin(0, 12, 0, 0),
+                padding=12,
+                bgcolor="#B70F33",
+                border_radius=16,
+                width=368,
+                content=ft.Row(
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+
+                        ft.Row(
+                            spacing=12,
+                            controls=[
+                                ft.Container(
+                                    width=46,
+                                    height=46,
+                                    bgcolor="white10",
+                                    border_radius=12,
+                                    alignment=ft.Alignment.CENTER,
+                                    border=ft.Border(
+                                        top=ft.BorderSide(1, "white24"),
+                                        bottom=ft.BorderSide(1, "white24"),
+                                        left=ft.BorderSide(1, "white24"),
+                                        right=ft.BorderSide(1, "white24")
+                                    ),
+                                    content=ft.Icon(
+                                        icon=ft.Icons.ASSIGNMENT_TURNED_IN_OUTLINED,
+                                        color="white",
+                                        size=20
+                                    )
+                                ),
+
+                                ft.Column(
+                                    spacing=2,
+                                    controls=[
+                                        ft.Text(
+                                            "AÇÃO OBRIGATÓRIA",
+                                            size=11,
+                                            color="white70",
+                                            weight=ft.FontWeight.W_500
+                                        ),
+                                        ft.Text(
+                                            "Iniciar Checklist de Turno",
+                                            size=14,
+                                            color="white",
+                                            weight=ft.FontWeight.BOLD
+                                        ),
+                                    ]
+                                )
+                            ]
+                        ),
+                        ft.Container(
+                            width=36,
+                            height=36,
+                            bgcolor="white10",
+                            shape=ft.BoxShape.CIRCLE,
+                            alignment=ft.Alignment.CENTER,
+                            content=ft.Icon(
+                                icon=ft.Icons.ARROW_FORWARD,
+                                color="white",
+                                size=16
+                            )
+                        )
+                    ]
+                )
+            ),
+
+            ft.Column(
+                width=340,
+                spacing=12,
+                controls=[
+
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            ft.Row(
+                                spacing=6,
+                                controls=[
+
+                                    ft.Icon(icon=ft.Icons.ANALYTICS_OUTLINED, color="white", size=16),
+                                    ft.Text(
+                                        "SITUAÇÃO DA FROTA HOJE",
+                                        size=12,
+                                        weight=ft.FontWeight.BOLD,
+                                        color="white",
+                                    ),
+                                ]
+                            ),
+                            ft.Text("Atualizado agora", size=11, color="grey600")
+                        ]
+                    ),
+
+                    # Linha dos 2 card
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        spacing=10,
+                        controls=[
+
+                            ft.Container(
+                                bgcolor="white",
+                                border_radius=16,
+                                padding=12,
+                                expand=True,
+                                border=ft.Border(
+                                    top=ft.BorderSide(1, "#E2E8F0"),
+                                    bottom=ft.BorderSide(1, "#E2E8F0"),
+                                    left=ft.BorderSide(1, "#E2E8F0"),
+                                    right=ft.BorderSide(1, "#E2E8F0"),
+                                ),
+                                content=ft.Column(
+                                    spacing=6,
+                                    controls=[
+                                        ft.Row(
+                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                            controls=[
+                                                ft.Text("Sua Viatura Recente", size=10, color="grey600",
+                                                        weight=ft.FontWeight.W_500),
+                                                ft.Container(
+                                                    content=ft.Icon(icon=ft.Icons.DIRECTIONS_CAR_OUTLINED,
+                                                                    color="#10B981", size=14),
+                                                    bgcolor="#E6F4EA",
+                                                    padding=4,
+                                                    border_radius=6,
+                                                )
+                                            ]
+                                        ),
+                                        ft.Text("M-0124", size=18, weight=ft.FontWeight.BOLD, color="#1A252F"),
+                                        ft.Text("Renault Duster • 45.210 km", size=10, color="grey600"),
+                                        ft.Divider(height=10, color="#F1F5F9"),
+                                        ft.Row(
+                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                            controls=[
+                                                ft.Text("Status", size=10, color="grey500"),
+                                                ft.Container(
+                                                    content=ft.Row(
+                                                        spacing=4,
+                                                        controls=[
+                                                            ft.Text("●", color="#10B981", size=8),
+                                                            ft.Text("Operacional", size=9, color="#10B981",
+                                                                    weight=ft.FontWeight.BOLD),
+                                                        ],
+                                                        alignment=ft.MainAxisAlignment.CENTER,
+                                                    ),
+                                                    bgcolor="#E6F4EA",
+                                                    padding=4,
+                                                    border_radius=12,
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            ),
+
+                            ft.Container(
+                                bgcolor="white",
+                                border_radius=16,
+                                padding=12,
+                                expand=True,
+                                border=ft.Border(
+                                    top=ft.BorderSide(1, "#E2E8F0"),
+                                    bottom=ft.BorderSide(1, "#E2E8F0"),
+                                    left=ft.BorderSide(1, "#E2E8F0"),
+                                    right=ft.BorderSide(1, "#E2E8F0"),
+                                ),
+                                content=ft.Column(
+                                    spacing=6,
+                                    controls=[
+                                        ft.Row(
+                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                            controls=[
+                                                ft.Text("Último Alerta", size=10, color="grey600",
+                                                        weight=ft.FontWeight.W_500),
+                                                ft.Container(
+                                                    content=ft.Icon(icon=ft.Icons.WARNING_AMBER_ROUNDED,
+                                                                    color="#D97706", size=14),
+                                                    bgcolor="#FEF3C7",
+                                                    padding=4,
+                                                    border_radius=6,
+                                                )
+                                            ]
+                                        ),
+                                        ft.Text("RP-09", size=18, weight=ft.FontWeight.BOLD, color="#1A252F"),
+                                        ft.Text("Óleo Baixo verificado", size=10, color="#7B341E",
+                                                weight=ft.FontWeight.W_500),
+                                        ft.Divider(height=10, color="#F1F5F9"),
+                                        ft.Row(
+                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                            controls=[
+                                                ft.Text("Ação", size=10, color="grey500"),
+                                                ft.Container(
+                                                    content=ft.Row(
+                                                        spacing=4,
+                                                        controls=[
+                                                            ft.Text("●", color="#D97706", size=8),
+                                                            ft.Text("Atenção", size=9, color="#D97706",
+                                                                    weight=ft.FontWeight.BOLD),
+                                                        ],
+                                                        alignment=ft.MainAxisAlignment.CENTER,
+                                                    ),
+                                                    bgcolor="#FEF3C7",
+                                                    padding=4,
+                                                    border_radius=12,
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            ),
+                        ]
+                    )
+                ]
             )
+
         ]
         page.update()
 
