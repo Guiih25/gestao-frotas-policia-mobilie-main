@@ -90,6 +90,296 @@ def main(page: ft.Page):
     lista_veiculos = ft.Column(spacing=10)
     filtros_container = ft.Row(spacing=6, scroll=ft.ScrollMode.AUTO)
 
+
+    # ---------------- DADOS E CONTROLES DO CHECK-LIST ----------------
+
+    estado_checklist = {
+        "combustivel": "3/4",
+        "pneus": "Excelente",
+        "oleo": "Normal",
+        "freios": "OK (Regular)",
+        "foto": "",
+    }
+
+    campo_odometro = ft.TextField(
+        value="45210",
+        hint_text="Informe a quilometragem",
+        suffix=ft.Text("KM", size=10, color="#64748B"),
+        keyboard_type=ft.KeyboardType.NUMBER,
+        text_size=12,
+        height=44,
+        bgcolor="#F8FAFC",
+        border_color="#E2E8F0",
+        border_radius=10,
+    )
+
+    campo_observacoes = ft.TextField(
+        hint_text="Descreva qualquer detalhe, avaria recente, risco na lataria ou anomalia mecânica...",
+        multiline=True,
+        min_lines=3,
+        max_lines=4,
+        text_size=11,
+        bgcolor="#F8FAFC",
+        border_color="#E2E8F0",
+        border_radius=10,
+    )
+
+    status_equipamentos = {
+        "Giroflex / Luminosos": True,
+        "Sirene Acústica": True,
+        "Rádio Transceptor": True,
+        "Estepe, Macaco e Chave": True,
+    }
+
+    controles_equipamentos = {}
+
+    def selecionar_opcao(grupo, valor):
+        estado_checklist[grupo] = valor
+        mostrar_checklist()
+
+    def criar_opcoes(grupo, opcoes):
+        controles = []
+        for opcao in opcoes:
+            ativo = estado_checklist[grupo] == opcao
+            controles.append(
+                ft.Container(
+                    expand=True,
+                    padding=ft.Padding(5, 10, 5, 10),
+                    bgcolor="#31543D" if ativo else "#F8FAFC",
+                    border=ft.Border.all(
+                        1, "#31543D" if ativo else "#E2E8F0"
+                    ),
+                    border_radius=10,
+                    alignment=ft.Alignment.CENTER,
+                    content=ft.Text(
+                        opcao,
+                        size=10,
+                        color="white" if ativo else "#64748B",
+                        weight=ft.FontWeight.BOLD if ativo else ft.FontWeight.NORMAL,
+                        text_align=ft.TextAlign.CENTER,
+                    ),
+                    on_click=lambda e, g=grupo, v=opcao: selecionar_opcao(g, v),
+                )
+            )
+        return ft.Row(spacing=6, controls=controles)
+
+    def criar_secao_checklist(titulo, icone, controles):
+        return ft.Container(
+            width=370,
+            padding=12,
+            bgcolor="white",
+            border_radius=14,
+            content=ft.Column(
+                spacing=10,
+                controls=[
+                    ft.Row(
+                        spacing=7,
+                        controls=[
+                            ft.Icon(icone, color="#31543D", size=16),
+                            ft.Text(
+                                titulo,
+                                size=12,
+                                color="#1E293B",
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                        ],
+                    ),
+                    *controles,
+                ],
+            ),
+        )
+
+    def atualizar_equipamento(nome, valor):
+        status_equipamentos[nome] = valor
+
+    def anexar_foto(e):
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(
+                "Para anexar fotos, precisamos configurar o seletor de arquivos nesta versão."
+            )
+        )
+        page.snack_bar.open = True
+        page.update()
+
+    def finalizar_checklist(e):
+        prefixo = estado_viaturas["selecionada"]
+        if not prefixo:
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text("Selecione uma viatura antes de finalizar o checklist.")
+            )
+        elif not campo_odometro.value or not campo_odometro.value.isdigit():
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text("Informe uma quilometragem válida.")
+            )
+        else:
+            page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"Checklist da viatura {prefixo} preenchido. Ainda não foi salvo em banco de dados.")
+            )
+        page.snack_bar.open = True
+        page.update()
+
+    def mostrar_checklist():
+        page.appbar = None
+        navigation_bar.selected_index = 0
+
+        prefixo = estado_viaturas["selecionada"]
+        veiculo_selecionado = next(
+            (v for v in veiculos if v["prefixo"] == prefixo), None
+        )
+
+        if veiculo_selecionado:
+            texto_viatura = f"Viatura: {veiculo_selecionado['prefixo']} ({veiculo_selecionado['modelo']})"
+            km_inicial = veiculo_selecionado["km"].replace(".", "").replace(" km", "")
+            if campo_odometro.value == "45210":
+                campo_odometro.value = km_inicial
+        else:
+            texto_viatura = "Viatura: nenhuma selecionada"
+
+        nome_policial = (
+            "Cb. Jefferson Silva"
+            if txt_matricula.value == "342.910-2"
+            else "Policial Militar"
+        )
+        matricula = txt_matricula.value or "Não informada"
+
+        controles_equipamentos.clear()
+        linhas_equipamentos = []
+        dados_equipamentos = [
+            ("Giroflex / Luminosos", ft.Icons.WB_SUNNY_OUTLINED, "Frontal e traseiro funcionando"),
+            ("Sirene Acústica", ft.Icons.VOLUME_UP_OUTLINED, "Módulos Yelp, Wail e Buzina"),
+            ("Rádio Transceptor", ft.Icons.SPEAKER_OUTLINED, "Canal COPOM operacional"),
+            ("Estepe, Macaco e Chave", ft.Icons.TIRE_REPAIR, "Kit de emergência no porta-malas"),
+        ]
+
+        for nome, icone, descricao in dados_equipamentos:
+            chave = ft.Switch(
+                value=status_equipamentos[nome],
+                active_color="#31543D",
+                on_change=lambda e, n=nome: atualizar_equipamento(n, e.control.value),
+            )
+            controles_equipamentos[nome] = chave
+            linhas_equipamentos.append(
+                ft.Row(
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        ft.Row(
+                            spacing=8,
+                            expand=True,
+                            controls=[
+                                ft.Icon(icone, size=15, color="#64748B"),
+                                ft.Column(
+                                    spacing=1,
+                                    controls=[
+                                        ft.Text(nome, size=10, color="#334155", weight=ft.FontWeight.BOLD),
+                                        ft.Text(descricao, size=9, color="#94A3B8"),
+                                    ],
+                                ),
+                            ],
+                        ),
+                        chave,
+                    ],
+                )
+            )
+
+        tela_principal.controls = [
+            ft.Column(
+                width=370,
+                spacing=10,
+                controls=[
+                    ft.Container(
+                        padding=12,
+                        bgcolor="white",
+                        border_radius=14,
+                        content=ft.Column(
+                            spacing=5,
+                            controls=[
+                                ft.Row(
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    controls=[
+                                        ft.Column(
+                                            spacing=2,
+                                            controls=[
+                                                ft.Text(nome_policial, size=12, color="#1E293B", weight=ft.FontWeight.BOLD),
+                                                ft.Text(f"Matrícula: {matricula} • 10º BPM", size=9, color="#94A3B8"),
+                                            ],
+                                        ),
+                                        ft.Container(
+                                            padding=6,
+                                            bgcolor="#E6F7F0",
+                                            border_radius=10,
+                                            content=ft.Text("Em Serviço", size=9, color="#059669", weight=ft.FontWeight.BOLD),
+                                        ),
+                                    ],
+                                ),
+                                ft.Text(texto_viatura, size=10, color="#334155", weight=ft.FontWeight.BOLD),
+                            ],
+                        ),
+                    ),
+
+                    criar_secao_checklist(
+                        "1. IDENTIFICAÇÃO & QUILOMETRAGEM",
+                        ft.Icons.SPEED,
+                        [
+                            ft.Text("Odômetro de Partida", size=10, color="#64748B", weight=ft.FontWeight.BOLD),
+                            campo_odometro,
+                            ft.Text("Nível de Combustível", size=10, color="#64748B", weight=ft.FontWeight.BOLD),
+                            criar_opcoes("combustivel", ["1/4", "1/2", "3/4", "Cheio"]),
+                        ],
+                    ),
+
+                    criar_secao_checklist(
+                        "2. CONDIÇÕES MECÂNICAS E PNEUS",
+                        ft.Icons.TIRE_REPAIR,
+                        [
+                            ft.Text("Estado dos Pneus", size=10, color="#64748B", weight=ft.FontWeight.BOLD),
+                            criar_opcoes("pneus", ["Excelente", "Regular", "Troca/Crítico"]),
+                            ft.Text("Nível do Óleo", size=10, color="#64748B", weight=ft.FontWeight.BOLD),
+                            criar_opcoes("oleo", ["Normal", "Baixo", "Crítico"]),
+                            ft.Text("Freios e Fluidos", size=10, color="#64748B", weight=ft.FontWeight.BOLD),
+                            criar_opcoes("freios", ["OK (Regular)", "Atenção"]),
+                        ],
+                    ),
+
+                    criar_secao_checklist(
+                        "3. EQUIPAMENTOS & SINALIZAÇÃO",
+                        ft.Icons.CHECKLIST_RTL,
+                        linhas_equipamentos,
+                    ),
+
+                    criar_secao_checklist(
+                        "4. OBSERVAÇÕES / AVARIAS",
+                        ft.Icons.EDIT_NOTE,
+                        [
+                            campo_observacoes,
+                            ft.OutlinedButton(
+                                content=ft.Row(
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    controls=[
+                                        ft.Icon(ft.Icons.ADD_A_PHOTO_OUTLINED, size=14),
+                                        ft.Text("Anexar Foto de Avaria", size=10),
+                                    ],
+                                ),
+                                on_click=anexar_foto,
+                            ),
+                        ],
+                    ),
+
+                    ft.Button(
+                        content="Finalizar Check-list",
+                        width=370,
+                        height=46,
+                        style=ft.ButtonStyle(
+                            bgcolor="#31543D",
+                            color="white",
+                            shape=ft.RoundedRectangleBorder(radius=10),
+                        ),
+                        on_click=finalizar_checklist,
+                    ),
+                ],
+            )
+        ]
+        page.update()
+
     # ---------------- FUNÇÕES DE NAVEGAÇÃO ----------------
 
     def mostrar_pagina(titulo, descricao, icone):
@@ -127,11 +417,7 @@ def main(page: ft.Page):
         pagina = e.control.selected_index
 
         if pagina == 0:
-            mostrar_pagina(
-                "Check-list",
-                "Área de checklist operacional.",
-                ft.Icons.CHECKLIST,
-            )
+            mostrar_checklist()
         elif pagina == 1:
             mudar_para_dashboard()
         elif pagina == 2:
@@ -430,7 +716,7 @@ def main(page: ft.Page):
 
         prefixo = estado_viaturas["selecionada"]
         botao_viatura.disabled = prefixo is None
-        botao_viatura.text = (
+        botao_viatura.content = (
             f"Confirmar {prefixo}"
             if prefixo
             else "Selecione uma Viatura"
@@ -450,12 +736,11 @@ def main(page: ft.Page):
 
         if prefixo:
             page.snack_bar = ft.SnackBar(
-                content=ft.Text(
-                    f"Viatura {prefixo} selecionada com sucesso!"
-                )
+                content=ft.Text(f"Viatura {prefixo} selecionada!")
             )
             page.snack_bar.open = True
-            page.update()
+            navigation_bar.selected_index = 0
+            mostrar_checklist()
 
     campo_busca = ft.TextField(
         hint_text="Buscar por prefixo, modelo ou placa...",
@@ -491,7 +776,53 @@ def main(page: ft.Page):
         campo_busca.value = ""
 
         tela_principal.controls = [
-
+            ft.Container(
+                padding=12,
+                bgcolor="#111C24",
+                border_radius=10,
+                content=ft.Row(
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        ft.Row(
+                            spacing=8,
+                            controls=[
+                                ft.Icon(
+                                    ft.Icons.SHIELD_OUTLINED,
+                                    color="#F59E0B",
+                                    size=22,
+                                ),
+                                ft.Column(
+                                    spacing=1,
+                                    controls=[
+                                        ft.Text(
+                                            "PMSC OPERACIONAL",
+                                            size=11,
+                                            color="white",
+                                            weight=ft.FontWeight.BOLD,
+                                        ),
+                                        ft.Text(
+                                            "10º BPM / 7ª RPM",
+                                            size=9,
+                                            color="grey400",
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                        ft.Row(
+                            spacing=4,
+                            controls=[
+                                ft.Text("●", color="#10B981", size=9),
+                                ft.Text(
+                                    "Conectado",
+                                    size=9,
+                                    color="white",
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ),
             ft.Container(
                 margin=ft.Margin(0, 15, 0, 5),
                 content=ft.Row(
@@ -506,7 +837,11 @@ def main(page: ft.Page):
                                     color="#1E293B",
                                     weight=ft.FontWeight.BOLD,
                                 ),
-
+                                ft.Text(
+                                    "Veículos disponíveis para assunção de serviço no 10º BPM",
+                                    size=9,
+                                    color="grey600",
+                                ),
                             ],
                         ),
                         ft.Container(
