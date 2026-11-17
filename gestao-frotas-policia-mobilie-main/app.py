@@ -1,5 +1,5 @@
 import flet as ft
-
+from routes import *
 
 def main(page: ft.Page):
     page.title = "PMSC Operacional - Login"
@@ -14,7 +14,7 @@ def main(page: ft.Page):
     page.bgcolor = "#1E293B"
 
     txt_matricula = ft.TextField(
-        hint_text="Ex: 923.456-7",
+        hint_text="Ex: joaquin12@gmail.com",
         prefix_icon=ft.Icons.BADGE,
         border_radius=ft.BorderRadius.all(8),
         border_color=ft.Colors.GREY_400,
@@ -42,44 +42,7 @@ def main(page: ft.Page):
 
     # ---------------- DADOS DAS VIATURAS ----------------
 
-    veiculos = [
-        {
-            "prefixo": "M-0124",
-            "placa": "QQR-8910",
-            "modelo": "Renault Duster",
-            "km": "45.210 km",
-            "status": "Operacional",
-            "observacao": "",
-            "disponivel": True,
-        },
-        {
-            "prefixo": "M-0145",
-            "placa": "RTY-1234",
-            "modelo": "Chevrolet Trailblazer",
-            "km": "89.150 km",
-            "status": "Atenção",
-            "observacao": "Revisão preventiva pendente: Nível de óleo próximo do limite recomendado.",
-            "disponivel": True,
-        },
-        {
-            "prefixo": "M-0210",
-            "placa": "UOP-5566",
-            "modelo": "Toyota Hilux",
-            "km": "112.400 km",
-            "status": "Oficina",
-            "observacao": "Indisponível! Em manutenção mecânica na DAL.",
-            "disponivel": False,
-        },
-        {
-            "prefixo": "V-4052",
-            "placa": "QJB-1234",
-            "modelo": "Renault Duster",
-            "km": "51.100 km",
-            "status": "Operacional",
-            "observacao": "",
-            "disponivel": True,
-        },
-    ]
+    veiculos = get_viaturas()
 
     estado_viaturas = {
         "filtro": "Todos",
@@ -89,7 +52,6 @@ def main(page: ft.Page):
 
     lista_veiculos = ft.Column(spacing=10)
     filtros_container = ft.Row(spacing=6, scroll=ft.ScrollMode.AUTO)
-
 
     # ---------------- DADOS E CONTROLES DO CHECK-LIST ----------------
 
@@ -299,7 +261,8 @@ def main(page: ft.Page):
                                         ft.Column(
                                             spacing=2,
                                             controls=[
-                                                ft.Text(nome_policial, size=12, color="#1E293B", weight=ft.FontWeight.BOLD),
+                                                ft.Text(nome_policial, size=12, color="#1E293B",
+                                                        weight=ft.FontWeight.BOLD),
                                                 ft.Text(f"Matrícula: {matricula} • 10º BPM", size=9, color="#94A3B8"),
                                             ],
                                         ),
@@ -307,7 +270,8 @@ def main(page: ft.Page):
                                             padding=6,
                                             bgcolor="#E6F7F0",
                                             border_radius=10,
-                                            content=ft.Text("Em Serviço", size=9, color="#059669", weight=ft.FontWeight.BOLD),
+                                            content=ft.Text("Em Serviço", size=9, color="#059669",
+                                                            weight=ft.FontWeight.BOLD),
                                         ),
                                     ],
                                 ),
@@ -459,7 +423,7 @@ def main(page: ft.Page):
 
     def criar_card_viatura(veiculo):
         selecionada = (
-            estado_viaturas["selecionada"] == veiculo["prefixo"]
+                estado_viaturas["selecionada"] == veiculo["prefixo"]
         )
         status = veiculo["status"]
 
@@ -645,13 +609,14 @@ def main(page: ft.Page):
         filtrados = []
 
         for veiculo in veiculos:
+            print(veiculo)
             corresponde_filtro = (
-                filtro == "Todos" or veiculo["status"] == filtro
+                    filtro == "Todos" or veiculo['viatura']["status"] == filtro
             )
             corresponde_busca = (
-                busca in veiculo["prefixo"].lower()
-                or busca in veiculo["placa"].lower()
-                or busca in veiculo["modelo"].lower()
+                    busca in veiculo['viatura']["prefixo"].lower()
+                    or busca in veiculo['viatura']["placa"].lower()
+                    or busca in veiculo['carro_modelo']["modelo"].lower()
             )
 
             if corresponde_filtro and corresponde_busca:
@@ -1328,16 +1293,26 @@ def main(page: ft.Page):
         ]
         page.update()
 
-    def efetuar_login(e):
+    def efetuar_login():
         matricula = txt_matricula.value
         senha = txt_senha.value
+        tem_erro = False
 
         if not matricula or not senha:
             txt_erro.value = "Por favor, preencha todos os campos!"
+            tem_erro = True
             page.update()
-        else:
+
+        if tem_erro == False:
             txt_erro.value = ""
-            mudar_para_dashboard()
+            user_log = logar_user(matricula, senha)
+
+            if user_log[1] == 201:
+                mudar_para_dashboard()
+            else:
+                txt_matricula.value = ""
+                txt_senha.value = ""
+                txt_erro.value = user_log[0]['msg']
 
     # ---------------- COMPONENTES DO LOGIN ----------------
 
@@ -1382,7 +1357,7 @@ def main(page: ft.Page):
                 ft.Column(
                     controls=[
                         ft.Text(
-                            "MATRÍCULA POLICIAL",
+                            "E-MAIL POLICIAL",
                             color="#1a252f",
                             size=10,
                             weight=ft.FontWeight.BOLD,
@@ -1445,7 +1420,7 @@ def main(page: ft.Page):
                             shape=ft.RoundedRectangleBorder(radius=10),
                         ),
                         height=48,
-                        on_click=efetuar_login,
+                        on_click=lambda _:efetuar_login(),
                     ),
                     width=float("inf"),
                 ),
